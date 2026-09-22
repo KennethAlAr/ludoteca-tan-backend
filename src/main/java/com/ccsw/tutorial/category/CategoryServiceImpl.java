@@ -6,6 +6,7 @@ import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -34,7 +35,11 @@ public class CategoryServiceImpl implements CategoryService {
     @Override
     public List<Category> findAll() {
 
-        return (List<Category>) this.categoryRepository.findAll();
+        List<Category> category = (List<Category>) this.categoryRepository.findAll();
+
+        category.sort(Comparator.comparing(Category::getId));
+
+        return category;
     }
 
     /**
