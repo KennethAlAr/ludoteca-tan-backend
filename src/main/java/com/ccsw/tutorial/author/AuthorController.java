@@ -51,7 +51,7 @@ public class AuthorController {
      * @param id PK de la entidad
      * @param dto datos de la entidad
      */
-    @Operation(summary = "Save or Update", description = "Method that saves or updates a Author")
+    @Operation(summary = "Save or Update", description = "Method that saves or updates an Author")
     @RequestMapping(path = { "", "/{id}" }, method = RequestMethod.PUT)
     public void save(@PathVariable(name = "id", required = false) Long id, @RequestBody AuthorDto dto) {
 
@@ -59,11 +59,11 @@ public class AuthorController {
     }
 
     /**
-     * Método para crear o actualizar un {@link Author}
+     * Método para eliminar un {@link Author}
      *
      * @param id PK de la entidad
      */
-    @Operation(summary = "Delete", description = "Method that deletes a Author")
+    @Operation(summary = "Delete", description = "Method that deletes an Author")
     @RequestMapping(path = "/{id}", method = RequestMethod.DELETE)
     public void delete(@PathVariable("id") Long id) throws Exception {
 

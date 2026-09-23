@@ -5,6 +5,7 @@ import com.ccsw.tutorial.category.CategoryService;
 import com.ccsw.tutorial.common.criteria.SearchCriteria;
 import com.ccsw.tutorial.game.model.Game;
 import com.ccsw.tutorial.game.model.GameDto;
+import com.ccsw.tutorial.reservation.model.Reservation;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,6 +30,15 @@ public class GameServiceImpl implements GameService {
 
     @Autowired
     CategoryService categoryService;
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Game get(Long id) {
+
+        return this.gameRepository.findById(id).orElse(null);
+    }
 
     /**
      * {@inheritDoc}
