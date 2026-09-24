@@ -1,6 +1,7 @@
 package com.ccsw.tutorial.reservation;
 
 import com.ccsw.tutorial.client.ClientService;
+import com.ccsw.tutorial.common.criteria.SearchCriteria;
 import com.ccsw.tutorial.game.GameService;
 import com.ccsw.tutorial.reservation.model.Reservation;
 import com.ccsw.tutorial.reservation.model.ReservationDto;
@@ -9,6 +10,7 @@ import jakarta.transaction.Transactional;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -45,7 +47,17 @@ public class ReservationServiceImpl implements ReservationService {
     @Override
     public Page<Reservation> findPage(ReservationSearchDto dto) {
 
-        return this.reservationRepository.findAll(dto.getPageable().getPageable());
+        ReservationSpecification gameSpec = new ReservationSpecification(new SearchCriteria("game.id", ":", dto.getGameId()));
+
+        ReservationSpecification clientSpec = new ReservationSpecification(new SearchCriteria("client.id", ":", dto.getClientId()));
+
+        ReservationSpecification startDateSpec = new ReservationSpecification(new SearchCriteria("startDate", "<=", dto.getDate()));
+
+        ReservationSpecification endDateSpec = new ReservationSpecification(new SearchCriteria("endDate", ">=", dto.getDate()));
+
+        Specification<Reservation> spec = gameSpec.and(clientSpec).and(startDateSpec).and(endDateSpec);
+
+        return this.reservationRepository.findAll(spec, dto.getPageable().getPageable());
     }
 
     /**
