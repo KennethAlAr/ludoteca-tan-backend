@@ -49,6 +49,15 @@ public class ReservationIT {
     private static final LocalDate EXISTS_DATE = LocalDate.parse("2026-09-12");
     private static final LocalDate NOT_EXISTS_DATE = LocalDate.parse("2026-01-01");
 
+    public static final LocalDate START_DATE_AFTER_END_DATE = LocalDate.parse("2026-09-26");
+    public static final LocalDate END_DATE_OVER_MAX_DURATION = LocalDate.parse("2026-09-30");
+    public static final Long CONFLICT_WITH_RESERVATION_GAME_ID = 2L;
+    public static final Long CONFLICT_WITH_RESERVATION_CLIENT_ID = 6L;
+    public static final LocalDate CONFLICT_WITH_GAME_RESERVATION_START_DATE = LocalDate.parse("2026-09-10");
+    public static final LocalDate CONFLICT_WITH_GAME_RESERVATION_END_DATE = LocalDate.parse("2026-09-15");
+    public static final LocalDate CONFLICT_WITH_CLIENT_RESERVATION_START_DATE = LocalDate.parse("2026-09-15");
+    public static final LocalDate CONFLICT_WITH_CLIENT_RESERVATION_END_DATE = LocalDate.parse("2026-09-25");
+
     @LocalServerPort
     private int port;
 
@@ -304,6 +313,86 @@ public class ReservationIT {
         assertEquals(NEW_RESERVATION_CLIENT_ID, reservation.getClient().getId());
         assertEquals(NEW_RESERVATION_START_DATE, reservation.getStartDate());
         assertEquals(NEW_RESERVATION_END_DATE, reservation.getEndDate());
+    }
+
+    @Test
+    public void saveWithEndDateBeforeStartDateShouldReturnBadRequest() {
+
+        GameDto gameDto = new GameDto();
+        gameDto.setId(NEW_RESERVATION_GAME_ID);
+
+        ClientDto clientDto = new ClientDto();
+        clientDto.setId(NEW_RESERVATION_CLIENT_ID);
+
+        ReservationDto dto = new ReservationDto();
+        dto.setGame(gameDto);
+        dto.setClient(clientDto);
+        dto.setStartDate(START_DATE_AFTER_END_DATE);
+        dto.setEndDate(NEW_RESERVATION_END_DATE);
+
+        ResponseEntity<?> response = restTemplate.exchange(LOCALHOST + port + SERVICE_PATH, HttpMethod.PUT, new HttpEntity<>(dto), Void.class);
+
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+    }
+
+    @Test
+    public void saveWithDurationOver14DaysShouldReturnBadRequest() {
+
+        GameDto gameDto = new GameDto();
+        gameDto.setId(NEW_RESERVATION_GAME_ID);
+
+        ClientDto clientDto = new ClientDto();
+        clientDto.setId(NEW_RESERVATION_CLIENT_ID);
+
+        ReservationDto dto = new ReservationDto();
+        dto.setGame(gameDto);
+        dto.setClient(clientDto);
+        dto.setStartDate(NEW_RESERVATION_START_DATE);
+        dto.setEndDate(END_DATE_OVER_MAX_DURATION);
+
+        ResponseEntity<?> response = restTemplate.exchange(LOCALHOST + port + SERVICE_PATH, HttpMethod.PUT, new HttpEntity<>(dto), Void.class);
+
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+    }
+
+    @Test
+    public void saveWithOverlappingGameReservationShouldReturnConflict() {
+
+        GameDto gameDto = new GameDto();
+        gameDto.setId(NEW_RESERVATION_GAME_ID);
+
+        ClientDto clientDto = new ClientDto();
+        clientDto.setId(CONFLICT_WITH_RESERVATION_CLIENT_ID);
+
+        ReservationDto dto = new ReservationDto();
+        dto.setGame(gameDto);
+        dto.setClient(clientDto);
+        dto.setStartDate(CONFLICT_WITH_GAME_RESERVATION_START_DATE);
+        dto.setEndDate(CONFLICT_WITH_GAME_RESERVATION_END_DATE);
+
+        ResponseEntity<?> response = restTemplate.exchange(LOCALHOST + port + SERVICE_PATH, HttpMethod.PUT, new HttpEntity<>(dto), Void.class);
+
+        assertEquals(HttpStatus.CONFLICT, response.getStatusCode());
+    }
+
+    @Test
+    public void saveWithOverlappingClientReservationShouldReturnConflict() {
+
+        GameDto gameDto = new GameDto();
+        gameDto.setId(CONFLICT_WITH_RESERVATION_GAME_ID);
+
+        ClientDto clientDto = new ClientDto();
+        clientDto.setId(CONFLICT_WITH_RESERVATION_CLIENT_ID);
+
+        ReservationDto dto = new ReservationDto();
+        dto.setGame(gameDto);
+        dto.setClient(clientDto);
+        dto.setStartDate(CONFLICT_WITH_CLIENT_RESERVATION_START_DATE);
+        dto.setEndDate(CONFLICT_WITH_CLIENT_RESERVATION_END_DATE);
+
+        ResponseEntity<?> response = restTemplate.exchange(LOCALHOST + port + SERVICE_PATH, HttpMethod.PUT, new HttpEntity<>(dto), Void.class);
+
+        assertEquals(HttpStatus.CONFLICT, response.getStatusCode());
     }
 
     @Test
