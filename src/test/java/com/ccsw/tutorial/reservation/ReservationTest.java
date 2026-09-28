@@ -103,8 +103,8 @@ public class ReservationTest {
 
         assertEquals(NEW_RESERVATION_GAME_ID, reservation.getValue().getGame().getId());
         assertEquals(NEW_RESERVATION_CLIENT_ID, reservation.getValue().getClient().getId());
-        assertEquals(NEW_RESERVATION_START_DATE, reservation.getValue().getStartDate().toString());
-        assertEquals(NEW_RESERVATION_END_DATE, reservation.getValue().getEndDate().toString());
+        assertEquals(NEW_RESERVATION_START_DATE, reservation.getValue().getStartDate());
+        assertEquals(NEW_RESERVATION_END_DATE, reservation.getValue().getEndDate());
     }
 
     @Test
@@ -144,9 +144,6 @@ public class ReservationTest {
         reservationDto.setStartDate(START_DATE_AFTER_END_DATE);
         reservationDto.setEndDate(NEW_RESERVATION_END_DATE);
 
-        Reservation reservation = mock(Reservation.class);
-        when(reservationRepository.findById(EXISTS_RESERVATION_ID)).thenReturn(Optional.of(reservation));
-
         ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> reservationService.save(EXISTS_RESERVATION_ID, reservationDto));
 
         assertEquals(HttpStatus.BAD_REQUEST, exception.getStatusCode());
@@ -165,9 +162,6 @@ public class ReservationTest {
         reservationDto.setClient(clientDto);
         reservationDto.setStartDate(NEW_RESERVATION_START_DATE);
         reservationDto.setEndDate(END_DATE_OVER_MAX_DURATION);
-
-        Reservation reservation = mock(Reservation.class);
-        when(reservationRepository.findById(EXISTS_RESERVATION_ID)).thenReturn(Optional.of(reservation));
 
         ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> reservationService.save(EXISTS_RESERVATION_ID, reservationDto));
 
@@ -189,16 +183,7 @@ public class ReservationTest {
         reservationDto.setStartDate(NEW_RESERVATION_START_DATE);
         reservationDto.setEndDate(NEW_RESERVATION_END_DATE);
 
-        Game game = new Game();
-        game.setId(NEW_RESERVATION_GAME_ID);
-
-        Client client = new Client();
-        client.setId(NEW_RESERVATION_CLIENT_ID);
-
-        when(gameService.get(NEW_RESERVATION_GAME_ID)).thenReturn(game);
-        when(clientService.get(NEW_RESERVATION_CLIENT_ID)).thenReturn(client);
-
-        when(reservationRepository.existsOverlappingReservationByGame(NEW_RESERVATION_GAME_ID, NEW_RESERVATION_START_DATE, NEW_RESERVATION_END_DATE)).thenReturn(true);
+        when(reservationRepository.existsOverlappingReservationByGame(null, NEW_RESERVATION_GAME_ID, NEW_RESERVATION_START_DATE, NEW_RESERVATION_END_DATE)).thenReturn(true);
 
         ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> reservationService.save(null, reservationDto));
 
@@ -220,16 +205,7 @@ public class ReservationTest {
         reservationDto.setStartDate(NEW_RESERVATION_START_DATE);
         reservationDto.setEndDate(NEW_RESERVATION_END_DATE);
 
-        Game game = new Game();
-        game.setId(NEW_RESERVATION_GAME_ID);
-
-        Client client = new Client();
-        client.setId(NEW_RESERVATION_CLIENT_ID);
-
-        when(gameService.get(NEW_RESERVATION_GAME_ID)).thenReturn(game);
-        when(clientService.get(NEW_RESERVATION_CLIENT_ID)).thenReturn(client);
-
-        when(reservationRepository.existsOverlappingReservationByClient(NEW_RESERVATION_CLIENT_ID, NEW_RESERVATION_START_DATE, NEW_RESERVATION_END_DATE)).thenReturn(true);
+        when(reservationRepository.existsOverlappingReservationByClient(null, NEW_RESERVATION_CLIENT_ID, NEW_RESERVATION_START_DATE, NEW_RESERVATION_END_DATE)).thenReturn(true);
 
         ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> reservationService.save(null, reservationDto));
 

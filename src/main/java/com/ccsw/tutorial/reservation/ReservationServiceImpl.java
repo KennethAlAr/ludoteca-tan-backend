@@ -15,6 +15,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.LocalDate;
 import java.util.List;
 
 /**
@@ -68,6 +69,10 @@ public class ReservationServiceImpl implements ReservationService {
     @Override
     public void save(Long id, ReservationDto dto) {
 
+        validateGameAvailability(dto);
+        validateClientAvailability(dto);
+        validateDates(dto);
+
         Reservation reservation;
 
         if (id == null) {
@@ -104,5 +109,45 @@ public class ReservationServiceImpl implements ReservationService {
     public List<Reservation> findAll() {
 
         return (List<Reservation>) this.reservationRepository.findAll();
+    }
+
+    /**
+     * Comprueba que el juego que se intenta reservar no esté reservado ya
+     *
+     * @param dto datos de la reserva
+     */
+    private void validateGameAvailability(ReservationDto dto) {
+        if (reservationRepository.existsOverlappingReservationByGame(dto.getId(), dto.getGame().getId(), dto.getStartDate(), dto.getEndDate())) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "El juego ya está reservado durante esas fechas.");
+        }
+    }
+
+    /**
+     * Comprueba que el cliente no tenga una reserva activa durante las fechas de reserva
+     *
+     * @param dto datos de la reserva
+     */
+    private void validateClientAvailability(ReservationDto dto) {
+        if (reservationRepository.existsOverlappingReservationByClient(dto.getId(), dto.getClient().getId(), dto.getStartDate(), dto.getEndDate())) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "El cliente ya tiene una reserva activa durante esas fechas.");
+        }
+    }
+
+    /**
+     * Comprueba que las fechas de reserva son válidas
+     *
+     * @param dto datos de la reserva
+     */
+    private void validateDates(ReservationDto dto) {
+        LocalDate startDate = dto.getStartDate();
+        LocalDate endDate = dto.getEndDate();
+
+        if (startDate.isAfter(endDate)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "La fecha de inicio no puede ser posterior a la fecha de devolución.");
+        }
+
+        if (endDate.isAfter(startDate.plusDays(14))) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "La fecha de devolución no puede ser superior a catorce días desde la fecha de inicio.");
+        }
     }
 }
