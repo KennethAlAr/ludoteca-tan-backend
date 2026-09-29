@@ -66,3 +66,9 @@ INSERT INTO reservation(game_id, client_id, start_date, end_date)
 VALUES (6, 6, '2026-09-20', '2026-10-03');
 INSERT INTO reservation(game_id, client_id, start_date, end_date)
 VALUES (1, 7, '2026-09-15', '2026-09-28');
+
+INSERT INTO role(name)
+VALUES ('ADMIN');
+
+INSERT INTO app_user(name, password, role_id)
+VALUES ('admin', 'admin', 1)
