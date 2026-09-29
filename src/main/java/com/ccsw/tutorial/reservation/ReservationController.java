@@ -1,5 +1,8 @@
 package com.ccsw.tutorial.reservation;
 
+import com.ccsw.tutorial.reservation.exception.ClientAlreadyHasReservationException;
+import com.ccsw.tutorial.reservation.exception.ErrorResponse;
+import com.ccsw.tutorial.reservation.exception.GameAlreadyReservedException;
 import com.ccsw.tutorial.reservation.model.Reservation;
 import com.ccsw.tutorial.reservation.model.ReservationDto;
 import com.ccsw.tutorial.reservation.model.ReservationSearchDto;
@@ -9,6 +12,7 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -42,12 +46,7 @@ public class ReservationController {
 
         Page<Reservation> page = this.reservationService.findPage(dto);
 
-        return new PageImpl<>(
-                page.getContent().stream().map(
-                        e -> mapper.map(e, ReservationDto.class)
-                ).collect(Collectors.toList()),
-                page.getPageable(),
-                page.getTotalElements());
+        return new PageImpl<>(page.getContent().stream().map(e -> mapper.map(e, ReservationDto.class)).collect(Collectors.toList()), page.getPageable(), page.getTotalElements());
     }
 
     /**
@@ -86,9 +85,18 @@ public class ReservationController {
 
         List<Reservation> reservations = this.reservationService.findAll();
 
-        return reservations.stream().map(
-                e -> mapper.map(e, ReservationDto.class)
-        ).collect(Collectors.toList());
+        return reservations.stream().map(e -> mapper.map(e, ReservationDto.class)).collect(Collectors.toList());
     }
 
+    @ExceptionHandler(value = GameAlreadyReservedException.class)
+    @ResponseStatus(HttpStatus.CONFLICT)
+    public ErrorResponse handleGameAlreadyReservedException(GameAlreadyReservedException error) {
+        return new ErrorResponse(error.getMessage());
+    }
+
+    @ExceptionHandler(value = ClientAlreadyHasReservationException.class)
+    @ResponseStatus(HttpStatus.CONFLICT)
+    public ErrorResponse handleClientAlreadyHasReservationException(ClientAlreadyHasReservationException error) {
+        return new ErrorResponse(error.getMessage());
+    }
 }

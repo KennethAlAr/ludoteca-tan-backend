@@ -3,6 +3,8 @@ package com.ccsw.tutorial.reservation;
 import com.ccsw.tutorial.client.ClientService;
 import com.ccsw.tutorial.common.criteria.SearchCriteria;
 import com.ccsw.tutorial.game.GameService;
+import com.ccsw.tutorial.reservation.exception.ClientAlreadyHasReservationException;
+import com.ccsw.tutorial.reservation.exception.GameAlreadyReservedException;
 import com.ccsw.tutorial.reservation.model.Reservation;
 import com.ccsw.tutorial.reservation.model.ReservationDto;
 import com.ccsw.tutorial.reservation.model.ReservationSearchDto;
@@ -118,7 +120,7 @@ public class ReservationServiceImpl implements ReservationService {
      */
     private void validateGameAvailability(ReservationDto dto) {
         if (reservationRepository.existsOverlappingReservationByGame(dto.getId(), dto.getGame().getId(), dto.getStartDate(), dto.getEndDate())) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "El juego ya está reservado durante esas fechas.");
+            throw new GameAlreadyReservedException("El juego ya está reservado durante esas fechas.");
         }
     }
 
@@ -129,7 +131,7 @@ public class ReservationServiceImpl implements ReservationService {
      */
     private void validateClientAvailability(ReservationDto dto) {
         if (reservationRepository.existsOverlappingReservationByClient(dto.getId(), dto.getClient().getId(), dto.getStartDate(), dto.getEndDate())) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "El cliente ya tiene una reserva activa durante esas fechas.");
+            throw new ClientAlreadyHasReservationException("El cliente ya tiene una reserva activa durante esas fechas.");
         }
     }
 
