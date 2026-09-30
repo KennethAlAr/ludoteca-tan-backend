@@ -1,5 +1,6 @@
 package com.ccsw.tutorial.reservation;
 
+import com.ccsw.tutorial.jwt.JwtService;
 import com.ccsw.tutorial.reservation.exception.ClientAlreadyHasReservationException;
 import com.ccsw.tutorial.reservation.exception.ErrorResponse;
 import com.ccsw.tutorial.reservation.exception.GameAlreadyReservedException;
@@ -34,6 +35,9 @@ public class ReservationController {
     @Autowired
     ModelMapper mapper;
 
+    @Autowired
+    JwtService jwtService;
+
     /**
      * Método para recuperar un listado paginado de {@link Reservation}
      *
@@ -57,7 +61,9 @@ public class ReservationController {
      */
     @Operation(summary = "Save or Update", description = "Method that saves or updates a Reservation")
     @RequestMapping(path = { "", "/{id}" }, method = RequestMethod.PUT)
-    public void save(@PathVariable(name = "id", required = false) Long id, @RequestBody ReservationDto dto) {
+    public void save(@PathVariable(name = "id", required = false) Long id, @RequestBody ReservationDto dto, @RequestHeader(name = "Authorization", required = false) String authorizationHeader) {
+
+        jwtService.validateToken(authorizationHeader);
 
         this.reservationService.save(id, dto);
     }
@@ -69,7 +75,9 @@ public class ReservationController {
      */
     @Operation(summary = "Delete", description = "Method that deletes a Reservation")
     @RequestMapping(path = "/{id}", method = RequestMethod.DELETE)
-    public void delete(@PathVariable("id") Long id) throws Exception {
+    public void delete(@PathVariable("id") Long id, @RequestHeader(name = "Authorization", required = false) String authorizationHeader) throws Exception {
+
+        jwtService.validateToken(authorizationHeader);
 
         this.reservationService.delete(id);
     }
